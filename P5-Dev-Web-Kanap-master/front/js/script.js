@@ -24,7 +24,7 @@ fetch("http://localhost:3000/api/products")
     console.log(error);
   });
 
-//fct qui ajoute les div crée dans la balise section (dom ?)
+//fct qui ajoute les div crée, dans la balise section (dom)
 //ensuite avec inner on met les liens, images, descrtiption... grâce aux variables et propriétés ?
 function buildHtml(product) {
   const newDiv = document.createElement("div");
