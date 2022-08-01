@@ -79,20 +79,37 @@ function addToLocalStorage(productInCart) {
   let productInLocalStorage = JSON.parse(localStorage.getItem("product"));
   console.log(productInLocalStorage);
   // Si oui :
-  if (productInLocalStorage) {
-    productInLocalStorage.push(optionProduct)
-    localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+  if (productInLocalStorage == null) {
+    // Créer un tableau (array) dans le Dom
+    (productInLocalStorage = []),
+      // Y mettre la variable "optionPoduct" qui contient un objet JS
+      productInLocalStorage.push(optionProduct),
+      // Convertir le contenu du array en JSON afin de pouvoir le mettre dans le LS
+      localStorage.setItem("product", JSON.stringify(productInLocalStorage));
     console.log(productInLocalStorage);
   }
   // Si non :
   else {
-    // Créer un tableau (array) dans le Dom
-    productInLocalStorage = [],
-    // Y mettre la variable "optionPoduct" qui contient un objet JS
-    productInLocalStorage.push(optionProduct),
-    // Convertir le contenu du array en JSON afin de pouvoir le mettre dans le LS 
-    localStorage.setItem("product", JSON.stringify(productInLocalStorage));
-    console.log(productInLocalStorage);
+    // Si ce n'est pas "null" on capte le array dans "elt" grace à la méthode find ?
+    //qui à en parametre une fct anonyme qui a elle meme en parametre "elt" (le contenant)
+    productInLocalStorage.every(function (elt) {
+      if (
+        // On compare elt avec optionProduct
+        elt.idProduct == optionProduct.idProduct &&
+        elt.colorProduct == optionProduct.colorProduct
+      ) {
+        // Si le meme article est deja dans le panier, on incrémente
+        console.log("ok");
+      } else {
+        // Sinon on ajoute le nouveau produit dans le panier
+        productInLocalStorage.push(optionProduct),
+          localStorage.setItem(
+            "product",
+            JSON.stringify(productInLocalStorage)
+          );
+        console.log(productInLocalStorage);
+      }
+    });
   }
 }
 
