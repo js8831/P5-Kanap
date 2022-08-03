@@ -4,33 +4,29 @@ fetch("http://localhost:3000/api/products")
   // typage des données en JSONs'il y a un resultat
   .then((results) => {
     if (results) {
+      // JSON () pour pouvoir lire et itérer dessus
       return results.json();
     }
   })
 
   // Ce then récupère les données de la promesse qui sont captées par
-  //la fct anonyme en parametre, qui à pour paramètre, elle même, "values"
-  //et les affiche sur la console
+  // la fct anonyme en parametre, qui à pour paramètre, elle même, "values"
+  // et les affiche sur la console
   .then(function (values) {
-    console.log(values);
     //Création et insertion, en boucle, des div pour chaque valeur existante dans la boucle
     //en appelant la fonction "buildHtml"
     values.map(function (value) {
       buildHtml(value);
     });
   })
-  //Si aucun resultats, affichage de l'erreur détectée
+  //Si aucun resultat, affichage de l'erreur détectée dans un console.log
   .catch(function (error) {
     console.log(error);
   });
 
-//fct qui ajoute les div crée, dans la balise section (dom)
-//ensuite avec inner on met les liens, images, descrtiption... grâce aux variables et propriétés ?
+// Fct qui ajoute les articles de l'API, dans la balise section
+// Avec inner on met les liens, images, descrtiption... En utilisant les valeurs qu'on a besoin
 function buildHtml(product) {
-  const newDiv = document.createElement("div");
   let section = document.getElementById("items");
-  section.appendChild(newDiv);
-  newDiv.innerHTML = `<a href="./product.html?id=${product._id}"><article><img src="${product.imageUrl}" alt="${product.altTxt}"><h3 class="productName">${product.name}</h3><p class="productDescription">${product.description}</p></article></a>`;
-  console.log(newDiv);
-  console.log(product);
+  section.innerHTML += `<a href="./product.html?id=${product._id}"><article><img src="${product.imageUrl}" alt="${product.altTxt}"><h3 class="productName">${product.name}</h3><p class="productDescription">${product.description}</p></article></a>`;
 }
