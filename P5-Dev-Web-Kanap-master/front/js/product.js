@@ -67,11 +67,11 @@ function buildHtml(product) {
   // Récuperation de l'élément par l'id
   let name = document.getElementById("title");
   // Une fois l'élément recupéré : ajout des valeurs de "product" via "innerHTML"
-  name.innerHTML = `${product.name}`;
+  name.innerHTML = product.name;
   let price = document.getElementById("price");
-  price.innerHTML = `${product.price}`;
+  price.innerHTML = product.price;
   let description = document.getElementById("description");
-  description.innerHTML = `${product.description}`;
+  description.innerHTML = product.description;
   let img = document.querySelector(".item__img");
   img.innerHTML = `<img src="${product.imageUrl}" alt="Photographie d'un canapé">`;
   // Récuperation des couleurs d'un canapé, une par une grace à map qui itère (boucle)
@@ -107,7 +107,7 @@ function checkIf(val) {
   // Vérification si la qté est comprise entre 0 et 100
   if (
     optionProduct.quantityProduct > 0 &&
-    optionProduct.quantityProduct < 100 &&
+    optionProduct.quantityProduct < 101 &&
     optionProduct.colorProduct !== ""
   ) {
     // Si oui, appel de la fct qui permet d'ajouter dans le LS
@@ -115,11 +115,11 @@ function checkIf(val) {
   } else if (optionProduct.quantityProduct == 0) {
     // Si non, des alertes apparaîssent
     displayMsg(
-      `<span style="background-color:red"> Ajouter une quantité comprise entre 0 et 100, merci :)</span>`
+      `<span style="background-color:red"> Ajouter une quantité comprise entre 1 et 100, merci :)</span>`
     );
   } else if (optionProduct.quantityProduct > 100) {
     displayMsg(
-      `<span style="background-color:red"> Ajouter une quantité comprise entre 0 et 100, merci :)</span>`
+      `<span style="background-color:red"> Ajouter une quantité comprise entre 1 et 100, merci :)</span>`
     );
   } else if (document.getElementById("colors").value === "") {
     displayMsg(
@@ -145,7 +145,8 @@ function addToLocalStorage(optionProduct) {
     );
     setHide();
     // Sinon si le LS contient des produits, on compare si le nouveau produit
-    // à ajouter existe deja dans le LS (id et couleur) en nous renvoyant son index SI OUI.
+    // à ajouter existe deja dans le LS (en comparant les id et les couleur).
+    // Si il y'a des valeurs identiques, cela nous renvoit l'index du premier element (ici produit) correspondant aux critères.
   } else {
     if (productInLocalStorage !== null) {
       let obtainIndex = productInLocalStorage.findIndex(
@@ -153,9 +154,9 @@ function addToLocalStorage(optionProduct) {
           elt.idProduct === optionProduct.idProduct &&
           elt.colorProduct === optionProduct.colorProduct
       );
-      // Si c'est le cas, on ajuste la qté du produit en question dans le LS qu'on avait appelé precedement ligne 87
+      // Si c'est le cas, on ajuste la qté du produit identique dans le LS qu'on avait appelé precedement ligne 87
       // et on renvoie le nouveau array en écrasant l'ancien car ils portent le meme nom de clé ?????????
-      // parseInt permet de convertir les strings en entier
+      // parseInt permet de convertir les strings en entier pour faire une addition de la qté du produit a ajouter avec le pdt deja présent dans le LS
       if (obtainIndex !== -1) {
         productInLocalStorage[obtainIndex].quantityProduct =
           parseInt(productInLocalStorage[obtainIndex].quantityProduct) +
@@ -191,7 +192,8 @@ function hideAddMsg() {
   errorElement.innerText = "";
 }
 
-// Disparition des msg d'ajout dans un délai de 2s
+// Disparition des msg d'ajout dans un délai de 2s (a optimiser ????)
+// précedement fait avec un addeventlistener (mouseover ou out ??????)
 function setHide() {
   setTimeout(() => {
     hideAddMsg();
