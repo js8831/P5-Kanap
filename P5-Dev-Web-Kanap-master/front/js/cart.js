@@ -2,12 +2,9 @@
 
 // Récuperation des produits dans le LS
 let productInLocalStorage = JSON.parse(localStorage.getItem("product"));
-/* let idProductIncart = productInLocalStorage.map(function (product) {
-  return product.idProduct;
-});*/
 
 // Récuperation des balises "section" via l'appel de variables pour des fonctions utilisées plus bas
-// Remplacement du contenu de cette section par un message "panier vide" si aucun article dans le Ls
+// Remplacement du contenu de la section 1 par un message "panier vide" si aucun article dans le Ls
 let section1 = document.querySelector("#cartAndFormContainer section.cart");
 // Section à remplir dynamiquement en cas d'article dans le Ls
 let section2 = document.getElementById("cart__items");
@@ -27,21 +24,21 @@ fetch("http://localhost:3000/api/products")
   });
 
 // Fct qui sera appelé pour ajouter les articles dans le panier en incrementant chaque article présent dans le LS
-function buildHtml(p) {
-  section2.innerHTML += `<article class="cart__item" data-id="{}" data-color="{product-color}">
+function buildHtml(v) {
+  section2.innerHTML += `<article class="cart__item" data-id="${v.idProduct}" data-color="${v.colorProduct}">
                 <div class="cart__item__img">
-                  <img src="${p.imgUrl}" alt="Photographie d'un canapé">
+                  <img src="${v.imgUrl}" alt="Photographie d'un canapé">
                 </div>
                 <div class="cart__item__content">
                   <div class="cart__item__content__description">
-                    <h2>${p.nameProduct}</h2>
-                    <p>${p.colorProduct}</p>
-                    <p>${p.priceProduct} €</p>
+                    <h2>${v.nameProduct}</h2>
+                    <p>${v.colorProduct}</p>
+                    <p>${v.priceProduct} €</p>
                   </div>
                   <div class="cart__item__content__settings">
                     <div class="cart__item__content__settings__quantity">
                       <p>Qté : </p>
-                      <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${p.qteProduct}">
+                      <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${v.qteProduct}">
                     </div>
                     <div class="cart__item__content__settings__delete">
                       <p class="deleteItem">Supprimer</p>
@@ -51,22 +48,24 @@ function buildHtml(p) {
               </article>`;
 }
 
-// Si panier vide
-if (productInLocalStorage === null) {
-  const emptyBasket = `<div class="limitedWidthBlockContainer"><span style="background-color:red">Le panier est vide, veuillez ajouter des produits.</span></div>`;
-  section1.innerHTML = emptyBasket;
-  // Si panier non vide
-} else {
-  function researchId(productApi) {
+function researchId(productApi) {
+  console.log(productInLocalStorage);
+  // Si panier vide, on remplace son contenu par le message ci dessous
+  if (productInLocalStorage === null) {
+    const emptyBasket = `<div class="limitedWidthBlockContainer"><span style="background-color:red">Le panier est vide, veuillez ajouter des produits.</span></div>`;
+    section1.innerHTML = emptyBasket;
+    // Si panier non vide
+  } else {
     // Création de l'array (vide) qui contiendra les caractéristiques des produits du panier
     let fullCart = [];
     // Récup de tous les produits dans le LS, un par un
     productInLocalStorage.forEach((p) => {
       //Récup de tous les produits de fetch, un par un
       productApi.forEach((product) => {
-        // Si un id est commun, alors creation d'objet (paires clé - valeur) et ajout du contenu dans l'array précedemment crée plus haut
+        // Si un id est commun au 2 objets comparés, alors on crée l'objet fullcart (paires clé - valeur)
+        // et on ajoute le contenu dans l'array précedemment crée plus haut
         // Ici il sait donc que les valeurs a récup sont celles dont l'id est commun ?????? Grâce à la condition "if"
-        // et non pas un id quelconque !
+        // et il ne prend pas un id quelconque !
         if (p.idProduct === product._id) {
           console.log(product.name);
           fullCart.push({
@@ -80,11 +79,79 @@ if (productInLocalStorage === null) {
         }
       });
     });
-    console.log(fullCart);
-    // Pour chaque produit du tableau nouvellement crée, cad pour les produits du panier,
-    // on appel la fct builHtml qui incrémente au lieu de remplacer
+    // On récupere chaque produit individuellement du tableau "fullcart" contenant les produits du panier, on les met dans le paramètre p
     fullCart.map((p) => {
+      // on appel la fonction buildHtlm utilisant les produits récupérés ci-dessus grace au paramètre p
       buildHtml(p);
+    });
+    // Appel des fcts suivantes, décrites en dessous
+    calculTotalQuantity(fullCart);
+    calculTotalPrice(fullCart);
+    createEventDelete();
+  }
+
+  function calculTotalQuantity(fullCart) {
+    console.log(fullCart);
+    // Appel de la méthode reduce (reduit les valeurs de l'array en une seule en faisant la somme)
+    // Elle a en parametre une autre fct et la valeur initiale de 0 (0 = acc) + valeur courante, qui deviendra acc, ainsi de suite comme dans une boucle)
+    // cette autre fct a en parametres (l'accumulateur et la valeur courante)
+    // Est-ce bon pour les comm ?????????
+    let sumQty = fullCart.reduce(function (accu, valCurrent) {
+      return accu + parseInt(valCurrent.qteProduct);
+    }, 0);
+    let totalQuantity = document.getElementById("totalQuantity");
+    totalQuantity.innerText = sumQty;
+  }
+
+  function calculTotalPrice(fullCart) {
+    // Creation d'un array pour utiliser la méthode reduce plus tard
+    let sumPriceByProduct = [];
+    // Boucle qui compte le nbre de produit dans fullCart et qui crée autant d'indice "i"
+    for (let i in fullCart) {
+      // Récupération des prix de chaque produit
+      let price = fullCart[i].priceProduct;
+      // Récupération des quantités pour chaque produit
+      let qty = parseInt(fullCart[i].qteProduct);
+      // Multiplication du prix de chaque produit par sa quantité correspondante et ajout dans l'array
+      // On obtient le prix total par produit
+      sumPriceByProduct.push(price * qty);
+      console.log(sumPriceByProduct);
+    }
+    // somme des totaux précedent
+    let sumPriceTotal = sumPriceByProduct.reduce((accu, valCurrent) => {
+      return accu + valCurrent;
+    });
+    console.log(sumPriceTotal);
+    // Récupération de l'element et injection dans le dom de façon dynamique
+    let totalPrice = document.getElementById("totalPrice");
+    totalPrice.innerText = sumPriceTotal;
+  }
+}
+
+function createEventDelete() {
+  // On selectionne tous les btn delete
+  let btnDelete = document.querySelectorAll(".deleteItem");
+
+  // Pour chaque btn delete, on ajoute un evenement au click
+  for (let j = 0; j < btnDelete.length; j++) {
+    btnDelete[j].addEventListener("click", (e) => {
+      console.log(e.target.closest("article.cart__item"));
+      // On enleve le comportement par défaut (redirection du lien)
+      e.preventDefault();
+      // Avec target, on cible l'element ou l'objet "e" ?????? et avec closest,
+      // On recherche l'article ayant la classe "cart__item le plus proche et ceci dans les parents ???????
+      // en renvoyant un element ou ancetres ??????"
+      let targetBtnDelete = e.target.closest("article.cart__item");
+      // Une fois l'elt ou l'ancetre trouvé on veut obtenir la valeur contenu dans l'attribut "data-id"
+      let dataId = targetBtnDelete.getAttribute("data-id");
+      console.log(dataId);
+
+      if ((productInLocalStorage.idProduct = dataId)) {
+        let obtainIndex = productInLocalStorage.findIndex((elt) => {
+          elt.idProduct == dataId;
+        });
+        console.log(obtainIndex);
+      }
     });
   }
 }
