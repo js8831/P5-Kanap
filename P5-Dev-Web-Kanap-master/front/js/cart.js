@@ -90,28 +90,28 @@ function researchId(productApi) {
     createEventDelete();
   }
 
-  function calculTotalQuantity(fullCart) {
-    console.log(fullCart);
+  function calculTotalQuantity(productsInCart) {
+    console.log(productsInCart);
     // Appel de la méthode reduce (reduit les valeurs de l'array en une seule en faisant la somme)
     // Elle a en parametre une autre fct et la valeur initiale de 0 (0 = acc) + valeur courante, qui deviendra acc, ainsi de suite comme dans une boucle)
     // cette autre fct a en parametres (l'accumulateur et la valeur courante)
     // Est-ce bon pour les comm ?????????
-    let sumQty = fullCart.reduce(function (accu, valCurrent) {
+    let sumQty = productsInCart.reduce(function (accu, valCurrent) {
       return accu + parseInt(valCurrent.qteProduct);
     }, 0);
     let totalQuantity = document.getElementById("totalQuantity");
     totalQuantity.innerText = sumQty;
   }
 
-  function calculTotalPrice(fullCart) {
+  function calculTotalPrice(productsInCart) {
     // Creation d'un array pour utiliser la méthode reduce plus tard
     let sumPriceByProduct = [];
-    // Boucle qui compte le nbre de produit dans fullCart et qui crée autant d'indice "i"
-    for (let i in fullCart) {
+    // Boucle qui compte le nbre de produit dans productsIncart et qui crée autant d'indice "i"
+    for (let i in productsInCart) {
       // Récupération des prix de chaque produit
-      let price = fullCart[i].priceProduct;
+      let price = productsInCart[i].priceProduct;
       // Récupération des quantités pour chaque produit
-      let qty = parseInt(fullCart[i].qteProduct);
+      let qty = parseInt(productsInCart[i].qteProduct);
       // Multiplication du prix de chaque produit par sa quantité correspondante et ajout dans l'array
       // On obtient le prix total par produit
       sumPriceByProduct.push(price * qty);
@@ -141,17 +141,31 @@ function createEventDelete() {
       // Avec target, on cible l'element ou l'objet "e" ?????? et avec closest,
       // On recherche l'article ayant la classe "cart__item le plus proche et ceci dans les parents ???????
       // en renvoyant un element ou ancetres ??????"
-      let targetBtnDelete = e.target.closest("article.cart__item");
+      let articleToDelete = e.target.closest("article.cart__item");
       // Une fois l'elt ou l'ancetre trouvé on veut obtenir la valeur contenu dans l'attribut "data-id"
-      let dataId = targetBtnDelete.getAttribute("data-id");
+      let dataId = articleToDelete.getAttribute("data-id");
       console.log(dataId);
+      section2.removeChild(articleToDelete);
 
-      if ((productInLocalStorage.idProduct = dataId)) {
-        let obtainIndex = productInLocalStorage.findIndex((elt) => {
-          elt.idProduct == dataId;
-        });
-        console.log(obtainIndex);
+      /* let deleteInLs = productInLocalStorage[j].idProduct;
+      console.log(deleteInLs); */
+
+      delInLs(dataId);
+
+      let remainingItem = document.querySelectorAll(".cart__item");
+      for (let k = 0; k < remainingItem.length; k++) {
+        let everyIdArticle = remainingItem[k].getAttribute("data-Id");
+        console.log(everyIdArticle);
       }
     });
   }
+}
+
+function delInLs(dataId) {
+  productInLocalStorage = productInLocalStorage.filter(
+    (el) => el.idProduct !== dataId
+  );
+  console.log(productInLocalStorage);
+  localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+  window.location.href = "cart.html";
 }
