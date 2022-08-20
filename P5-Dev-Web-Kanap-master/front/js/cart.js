@@ -48,47 +48,54 @@ function buildHtml(v) {
               </article>`;
 }
 
-function researchId(productApi) {
-  console.log(productInLocalStorage);
-  // Si panier vide, on remplace son contenu par le message ci dessous
-  if (productInLocalStorage === null) {
+function empty (){
+// Si panier vide, on remplace son contenu par le message ci dessous
+  if (productInLocalStorage.length === 0) {
     const emptyBasket = `<div class="limitedWidthBlockContainer"><span style="background-color:red">Le panier est vide, veuillez ajouter des produits.</span></div>`;
     section1.innerHTML = emptyBasket;
-    // Si panier non vide
-  } else {
-    // Création de l'array (vide) qui contiendra les caractéristiques des produits du panier
-    let fullCart = [];
-    // Récup de tous les produits dans le LS, un par un
-    productInLocalStorage.forEach((p) => {
-      //Récup de tous les produits de fetch, un par un
-      productApi.forEach((product) => {
-        // Si un id est commun au 2 objets comparés, alors on crée l'objet fullcart (paires clé - valeur)
-        // et on ajoute le contenu dans l'array précedemment crée plus haut
-        // Ici il sait donc que les valeurs a récup sont celles dont l'id est commun ?????? Grâce à la condition "if"
-        // et il ne prend pas un id quelconque !
-        if (p.idProduct === product._id) {
-          console.log(product.name);
-          fullCart.push({
-            nameProduct: product.name,
-            priceProduct: product.price,
-            imgUrl: product.imageUrl,
-            idProduct: p.idProduct,
-            colorProduct: p.colorProduct,
-            qteProduct: p.quantityProduct,
-          });
-        }
-      });
-    });
-    // On récupere chaque produit individuellement du tableau "fullcart" contenant les produits du panier, on les met dans le paramètre p
-    fullCart.map((p) => {
-      // on appel la fonction buildHtlm utilisant les produits récupérés ci-dessus grace au paramètre p
-      buildHtml(p);
-    });
-    // Appel des fcts suivantes, décrites en dessous
-    calculTotalQuantity(fullCart);
-    calculTotalPrice(fullCart);
-    createEventDelete();
+    
   }
+}
+
+function researchId(productApi) {
+  console.log(productInLocalStorage);
+  empty()
+  // Si panier non vide
+   if (productInLocalStorage.length !== 0) {
+     // Création de l'array (vide) qui contiendra les caractéristiques des produits du panier
+     let fullCart = [];
+     // Récup de tous les produits dans le LS, un par un
+     productInLocalStorage.forEach((p) => {
+       //Récup de tous les produits de fetch, un par un
+       productApi.forEach((product) => {
+         // Si un id est commun au 2 objets comparés, alors on crée l'objet fullcart (paires clé - valeur)
+         // et on ajoute le contenu dans l'array précedemment crée plus haut
+         // Ici il sait donc que les valeurs a récup sont celles dont l'id est commun ?????? Grâce à la condition "if"
+         // et il ne prend pas un id quelconque !
+         if (p.idProduct === product._id) {
+           console.log(product.name);
+           fullCart.push({
+             nameProduct: product.name,
+             priceProduct: product.price,
+             imgUrl: product.imageUrl,
+             idProduct: p.idProduct,
+             colorProduct: p.colorProduct,
+             qteProduct: p.quantityProduct,
+           });
+         }
+       });
+     });
+     // On récupere chaque produit individuellement du tableau "fullcart" contenant les produits du panier, on les met dans le paramètre p
+     fullCart.map((p) => {
+       // on appel la fonction buildHtlm utilisant les produits récupérés ci-dessus grace au paramètre p
+       buildHtml(p);
+     });
+     // Appel des fcts suivantes, décrites en dessous
+     calculTotalQuantity(fullCart);
+     calculTotalPrice(fullCart);
+     createEventDelete();
+     createEventChangeQty();
+   }
 
   function calculTotalQuantity(productsInCart) {
     console.log(productsInCart);
@@ -144,28 +151,54 @@ function createEventDelete() {
       let articleToDelete = e.target.closest("article.cart__item");
       // Une fois l'elt ou l'ancetre trouvé on veut obtenir la valeur contenu dans l'attribut "data-id"
       let dataId = articleToDelete.getAttribute("data-id");
+      let dataColor = articleToDelete.getAttribute("data-color");
       console.log(dataId);
+      console.log(dataColor);
       section2.removeChild(articleToDelete);
 
-      /* let deleteInLs = productInLocalStorage[j].idProduct;
-      console.log(deleteInLs); */
+      delInLs(dataId, dataColor);
+    });
+  }
+}
 
-      delInLs(dataId);
-
-      let remainingItem = document.querySelectorAll(".cart__item");
-      for (let k = 0; k < remainingItem.length; k++) {
-        let everyIdArticle = remainingItem[k].getAttribute("data-Id");
-        console.log(everyIdArticle);
+function createEventChangeQty() {
+  let inputQty = document.querySelectorAll(".itemQuantity");
+  for (let k = 0; k < inputQty.length; k++) {
+    inputQty[k].addEventListener("change", (e) => {
+      let articleToChangeQty = e.target.closest("article.cart__item");
+      let dataId = articleToChangeQty.getAttribute("data-id");
+      let dataColor = articleToChangeQty.getAttribute("data-color");
+      let neWQty = inputQty[k].value;
+      let obtainIndex = productInLocalStorage.findIndex(
+        (elt) => elt.idProduct === dataId && elt.colorProduct === dataColor
+      );
+      console.log(dataId);
+      console.log(dataColor);
+      console.log(neWQty);
+      console.log(obtainIndex);
+      if (obtainIndex !== -1) {
+        productInLocalStorage[obtainIndex].quantityProduct = parseInt(neWQty);
+        localStorage.setItem("product", JSON.stringify(productInLocalStorage));
       }
     });
   }
 }
 
-function delInLs(dataId) {
+function delInLs(dataId, dataColor) {
   productInLocalStorage = productInLocalStorage.filter(
-    (el) => el.idProduct !== dataId
+    (el) => el.idProduct !== dataId || el.colorProduct !== dataColor
   );
   console.log(productInLocalStorage);
   localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+  empty()
   window.location.href = "cart.html";
 }
+
+/* let deleteInLs = productInLocalStorage[j].idProduct;
+      console.log(deleteInLs); */
+
+/* let remainingItem = document.querySelectorAll(".cart__item");
+      for (let k = 0; k < remainingItem.length; k++) {
+        let everyIdArticle = remainingItem[k].getAttribute("data-Id");
+        console.log(everyIdArticle);
+      } */
