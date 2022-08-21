@@ -48,94 +48,98 @@ function buildHtml(v) {
               </article>`;
 }
 
-function empty (){
-// Si panier vide, on remplace son contenu par le message ci dessous
-  if (productInLocalStorage.length === 0) {
+function empty() {
+  // Si panier vide, on remplace son contenu par le message ci dessous
+  if (productInLocalStorage == 0 || productInLocalStorage === null) {
     const emptyBasket = `<div class="limitedWidthBlockContainer"><span style="background-color:red">Le panier est vide, veuillez ajouter des produits.</span></div>`;
     section1.innerHTML = emptyBasket;
-    
   }
+}
+let fullCart = [];
+function createFullCart(productApi, fullCart) {
+  productInLocalStorage.forEach((p) => {
+    //Récup de tous les produits de fetch, un par un
+    productApi.forEach((product) => {
+      // Si un id est commun au 2 objets comparés, alors on crée l'objet fullcart (paires clé - valeur)
+      // et on ajoute le contenu dans l'array précedemment crée plus haut
+      // Ici il sait donc que les valeurs a récup sont celles dont l'id est commun ?????? Grâce à la condition "if"
+      // et il ne prend pas un id quelconque !
+      if (p.idProduct === product._id) {
+        console.log(product.name);
+        fullCart.push({
+          nameProduct: product.name,
+          priceProduct: product.price,
+          imgUrl: product.imageUrl,
+          idProduct: p.idProduct,
+          colorProduct: p.colorProduct,
+          qteProduct: p.quantityProduct,
+        });
+      }
+    });
+  });
 }
 
 function researchId(productApi) {
   console.log(productInLocalStorage);
-  empty()
+  empty();
   // Si panier non vide
-   if (productInLocalStorage.length !== 0) {
-     // Création de l'array (vide) qui contiendra les caractéristiques des produits du panier
-     let fullCart = [];
-     // Récup de tous les produits dans le LS, un par un
-     productInLocalStorage.forEach((p) => {
-       //Récup de tous les produits de fetch, un par un
-       productApi.forEach((product) => {
-         // Si un id est commun au 2 objets comparés, alors on crée l'objet fullcart (paires clé - valeur)
-         // et on ajoute le contenu dans l'array précedemment crée plus haut
-         // Ici il sait donc que les valeurs a récup sont celles dont l'id est commun ?????? Grâce à la condition "if"
-         // et il ne prend pas un id quelconque !
-         if (p.idProduct === product._id) {
-           console.log(product.name);
-           fullCart.push({
-             nameProduct: product.name,
-             priceProduct: product.price,
-             imgUrl: product.imageUrl,
-             idProduct: p.idProduct,
-             colorProduct: p.colorProduct,
-             qteProduct: p.quantityProduct,
-           });
-         }
-       });
-     });
-     // On récupere chaque produit individuellement du tableau "fullcart" contenant les produits du panier, on les met dans le paramètre p
-     fullCart.map((p) => {
-       // on appel la fonction buildHtlm utilisant les produits récupérés ci-dessus grace au paramètre p
-       buildHtml(p);
-     });
-     // Appel des fcts suivantes, décrites en dessous
-     calculTotalQuantity(fullCart);
-     calculTotalPrice(fullCart);
-     createEventDelete();
-     createEventChangeQty();
-   }
+  if (/* productInLocalStorage !== 0 || */ productInLocalStorage !== null) {
+    // Création de l'array (vide) qui contiendra les caractéristiques des produits du panier
 
-  function calculTotalQuantity(productsInCart) {
-    console.log(productsInCart);
-    // Appel de la méthode reduce (reduit les valeurs de l'array en une seule en faisant la somme)
-    // Elle a en parametre une autre fct et la valeur initiale de 0 (0 = acc) + valeur courante, qui deviendra acc, ainsi de suite comme dans une boucle)
-    // cette autre fct a en parametres (l'accumulateur et la valeur courante)
-    // Est-ce bon pour les comm ?????????
-    let sumQty = productsInCart.reduce(function (accu, valCurrent) {
-      return accu + parseInt(valCurrent.qteProduct);
-    }, 0);
-    let totalQuantity = document.getElementById("totalQuantity");
-    totalQuantity.innerText = sumQty;
-  }
-
-  function calculTotalPrice(productsInCart) {
-    // Creation d'un array pour utiliser la méthode reduce plus tard
-    let sumPriceByProduct = [];
-    // Boucle qui compte le nbre de produit dans productsIncart et qui crée autant d'indice "i"
-    for (let i in productsInCart) {
-      // Récupération des prix de chaque produit
-      let price = productsInCart[i].priceProduct;
-      // Récupération des quantités pour chaque produit
-      let qty = parseInt(productsInCart[i].qteProduct);
-      // Multiplication du prix de chaque produit par sa quantité correspondante et ajout dans l'array
-      // On obtient le prix total par produit
-      sumPriceByProduct.push(price * qty);
-      console.log(sumPriceByProduct);
-    }
-    // somme des totaux précedent
-    let sumPriceTotal = sumPriceByProduct.reduce((accu, valCurrent) => {
-      return accu + valCurrent;
+    // Récup de tous les produits dans le LS, un par un
+    createFullCart(productApi, fullCart);
+    // On récupere chaque produit individuellement du tableau "fullcart" contenant les produits du panier, on les met dans le paramètre p
+    fullCart.map((p) => {
+      // on appel la fonction buildHtlm utilisant les produits récupérés ci-dessus grace au paramètre p
+      buildHtml(p);
     });
-    console.log(sumPriceTotal);
-    // Récupération de l'element et injection dans le dom de façon dynamique
-    let totalPrice = document.getElementById("totalPrice");
-    totalPrice.innerText = sumPriceTotal;
+    // Appel des fcts suivantes, décrites en dessous
+    calculTotalPrice(fullCart);
+    createEventDelete(fullCart);
+    createEventChangeQty(fullCart);
+    calculTotalQuantity();
   }
 }
 
-function createEventDelete() {
+function calculTotalQuantity() {
+  // Appel de la méthode reduce (reduit les valeurs de l'array en une seule en faisant la somme)
+  // Elle a en parametre une autre fct et la valeur initiale de 0 (0 = acc) + valeur courante, qui deviendra acc, ainsi de suite comme dans une boucle)
+  // cette autre fct a en parametres (l'accumulateur et la valeur courante)
+  // Est-ce bon pour les comm ?????????
+  let sumQty = productInLocalStorage.reduce(function (accu, valCurrent) {
+    return accu + parseInt(valCurrent.quantityProduct);
+  }, 0);
+  let totalQuantity = document.getElementById("totalQuantity");
+  totalQuantity.innerText = sumQty;
+}
+
+function calculTotalPrice(productsInCart) {
+  // Creation d'un array pour utiliser la méthode reduce plus tard
+  let sumPriceByProduct = [];
+  // Boucle qui compte le nbre de produit dans productsIncart et qui crée autant d'indice "i"
+  for (let i in productInLocalStorage) {
+    console.log(productInLocalStorage);
+    // Récupération des prix de chaque produit
+    let price = productsInCart[i].priceProduct;
+    console.log(productsInCart[i]);
+    // Récupération des quantités pour chaque produit
+    let qty = parseInt(productInLocalStorage[i].quantityProduct);
+    // Multiplication du prix de chaque produit par sa quantité correspondante et ajout dans l'array
+    // On obtient le prix total par produit
+    sumPriceByProduct.push(price * qty);
+    console.log(sumPriceByProduct);
+  }
+  // somme des totaux précedent
+  let sumPriceTotal = sumPriceByProduct.reduce((accu, valCurrent) => {
+    return accu + valCurrent;
+  });
+  console.log(sumPriceTotal);
+  // Récupération de l'element et injection dans le dom de façon dynamique
+  let totalPrice = document.getElementById("totalPrice");
+  totalPrice.innerText = sumPriceTotal;
+}
+
+function createEventDelete(fullCart) {
   // On selectionne tous les btn delete
   let btnDelete = document.querySelectorAll(".deleteItem");
 
@@ -156,12 +160,12 @@ function createEventDelete() {
       console.log(dataColor);
       section2.removeChild(articleToDelete);
 
-      delInLs(dataId, dataColor);
+      delInLs(dataId, dataColor, fullCart);
     });
   }
 }
 
-function createEventChangeQty() {
+function createEventChangeQty(fullcart) {
   let inputQty = document.querySelectorAll(".itemQuantity");
   for (let k = 0; k < inputQty.length; k++) {
     inputQty[k].addEventListener("change", (e) => {
@@ -179,19 +183,28 @@ function createEventChangeQty() {
       if (obtainIndex !== -1) {
         productInLocalStorage[obtainIndex].quantityProduct = parseInt(neWQty);
         localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+        calculTotalQuantity();
+        calculTotalPrice(fullcart);
       }
     });
   }
 }
 
-function delInLs(dataId, dataColor) {
+function delInLs(dataId, dataColor, fullCart) {
   productInLocalStorage = productInLocalStorage.filter(
     (el) => el.idProduct !== dataId || el.colorProduct !== dataColor
   );
-  console.log(productInLocalStorage);
   localStorage.setItem("product", JSON.stringify(productInLocalStorage));
-  empty()
-  window.location.href = "cart.html";
+  console.log(productInLocalStorage);
+  if (productInLocalStorage == null || productInLocalStorage == 0) {
+    empty();
+    localStorage.removeItem("product");
+  } else {
+    calculTotalQuantity();
+    calculTotalPrice(fullCart);
+  }
+
+  /* window.location.href = "cart.html"; */
 }
 
 /* let deleteInLs = productInLocalStorage[j].idProduct;
