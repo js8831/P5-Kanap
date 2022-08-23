@@ -1,13 +1,14 @@
-// Appel des variables ou déclaration ??????
+//-------Déclaration des variables-------
 
 // Récuperation des produits dans le LS
 let productInLocalStorage = JSON.parse(localStorage.getItem("product"));
-
-// Récuperation des balises "section" via l'appel de variables pour des fonctions utilisées plus bas
-// Remplacement du contenu de la section 1 par un message "panier vide" si aucun article dans le Ls
+// Récuperation des balises "section" pour des fonctions utilisées plus bas
 let section1 = document.querySelector("#cartAndFormContainer section.cart");
-// Section à remplir dynamiquement en cas d'article dans le Ls
 let section2 = document.getElementById("cart__items");
+// Création du tableau à remplir
+let fullCart = [];
+
+//-------Fetch-------
 
 fetch("http://localhost:3000/api/products")
   .then((res) => {
@@ -16,14 +17,16 @@ fetch("http://localhost:3000/api/products")
     }
   })
   .then((values) => {
-    // Appel de la fct researchId pour les pdts extraits de fetch
-    researchId(values);
+    // Appel de la fct init pour les pdts extraits via "fetch"
+    init(values);
   })
   .catch((err) => {
     console.log(err);
   });
 
-// Fct qui sera appelé pour ajouter les articles dans le panier en incrementant chaque article présent dans le LS
+//-------Les fonctions-------
+
+// Incrémente dans le DOM, les articles dynamiquement crées avec fullCart.map
 function buildHtml(v) {
   section2.innerHTML += `<article class="cart__item" data-id="${v.idProduct}" data-color="${v.colorProduct}">
                 <div class="cart__item__img">
@@ -48,20 +51,20 @@ function buildHtml(v) {
               </article>`;
 }
 
+// Si le panier est vide, on affiche le message ci-dessous dans la section1
 function empty() {
-  // Si panier vide, on remplace son contenu par le message ci dessous
   if (productInLocalStorage == 0 || productInLocalStorage === null) {
     const emptyBasket = `<div class="limitedWidthBlockContainer"><span style="background-color:red">Le panier est vide, veuillez ajouter des produits.</span></div>`;
     section1.innerHTML = emptyBasket;
   }
 }
-let fullCart = [];
+
+// Fonction qui push dans l'array fullCart un objet de 6 propriétés (paires clé - valeur) pour chaque article dans le LS
 function createFullCart(productApi, fullCart) {
   productInLocalStorage.forEach((p) => {
-    //Récup de tous les produits de fetch, un par un
+    //Récup. de tous les produits du serveur un par un
     productApi.forEach((product) => {
-      // Si un id est commun au 2 objets comparés, alors on crée l'objet fullcart (paires clé - valeur)
-      // et on ajoute le contenu dans l'array précedemment crée plus haut
+      // Si un id est commun au 2 objets comparés
       // Ici il sait donc que les valeurs a récup sont celles dont l'id est commun ?????? Grâce à la condition "if"
       // et il ne prend pas un id quelconque !
       if (p.idProduct === product._id) {
@@ -79,18 +82,15 @@ function createFullCart(productApi, fullCart) {
   });
 }
 
-function researchId(productApi) {
-  console.log(productInLocalStorage);
+// Initialise tout
+function init(productApi) {
   empty();
   // Si panier non vide
-  if (/* productInLocalStorage !== 0 || */ productInLocalStorage !== null) {
-    // Création de l'array (vide) qui contiendra les caractéristiques des produits du panier
-
-    // Récup de tous les produits dans le LS, un par un
+  if (productInLocalStorage !== null) {
     createFullCart(productApi, fullCart);
-    // On récupere chaque produit individuellement du tableau "fullcart" contenant les produits du panier, on les met dans le paramètre p
+    // On récupere chaque produit individuellement du tableau "fullcart" contenant les produits du panier, on les met dans le paramètre "p"
     fullCart.map((p) => {
-      // on appel la fonction buildHtlm utilisant les produits récupérés ci-dessus grace au paramètre p
+      // on appel la fonction buildHtlm utilisant les produits récupérés ci-dessus grâce au paramètre "p"
       buildHtml(p);
     });
     // Appel des fcts suivantes, décrites en dessous
@@ -101,11 +101,11 @@ function researchId(productApi) {
   }
 }
 
+// Calcule la quantité totale
 function calculTotalQuantity() {
   // Appel de la méthode reduce (reduit les valeurs de l'array en une seule en faisant la somme)
   // Elle a en parametre une autre fct et la valeur initiale de 0 (0 = acc) + valeur courante, qui deviendra acc, ainsi de suite comme dans une boucle)
   // cette autre fct a en parametres (l'accumulateur et la valeur courante)
-  // Est-ce bon pour les comm ?????????
   let sumQty = productInLocalStorage.reduce(function (accu, valCurrent) {
     return accu + parseInt(valCurrent.quantityProduct);
   }, 0);
@@ -113,74 +113,91 @@ function calculTotalQuantity() {
   totalQuantity.innerText = sumQty;
 }
 
-function calculTotalPrice(productsInCart) {
+// Calcule le prix total
+function calculTotalPrice(fullCart) {
   // Creation d'un array pour utiliser la méthode reduce plus tard
   let sumPriceByProduct = [];
-  // Boucle qui compte le nbre de produit dans productsIncart et qui crée autant d'indice "i"
+  // Boucle qui index les produits dans le LS
   for (let i in productInLocalStorage) {
-    console.log(productInLocalStorage);
-    // Récupération des prix de chaque produit
-    let price = productsInCart[i].priceProduct;
-    console.log(productsInCart[i]);
-    // Récupération des quantités pour chaque produit
+    // Récupération du prix de chaque produit du panier en fonction de l'index récupéré
+    // (ce sont des arrays ayant les même produits et dans le même ordre)
+    let price = fullCart[i].priceProduct;
+    // Récupération des quantités de chaque produit par index
     let qty = parseInt(productInLocalStorage[i].quantityProduct);
-    // Multiplication du prix de chaque produit par sa quantité correspondante et ajout dans l'array
+    // Multiplication du prix par sa quantité correspondante et ajout dans l'array précedement crée
     // On obtient le prix total par produit
     sumPriceByProduct.push(price * qty);
     console.log(sumPriceByProduct);
   }
-  // somme des totaux précedent
+  // Somme des totaux précedent
   let sumPriceTotal = sumPriceByProduct.reduce((accu, valCurrent) => {
     return accu + valCurrent;
   });
   console.log(sumPriceTotal);
-  // Récupération de l'element et injection dans le dom de façon dynamique
+  // Récupération de l'element et injection de la somme total dynamiquement
   let totalPrice = document.getElementById("totalPrice");
   totalPrice.innerText = sumPriceTotal;
 }
 
+// Supprime
 function createEventDelete(fullCart) {
-  // On selectionne tous les btn delete
+  // On selectionne tous les btn delete en les indexant
   let btnDelete = document.querySelectorAll(".deleteItem");
 
-  // Pour chaque btn delete, on ajoute un evenement au click
+  // Pour chaque btn "delete", on ajoute un evenement au click
   for (let j = 0; j < btnDelete.length; j++) {
     btnDelete[j].addEventListener("click", (e) => {
-      console.log(e.target.closest("article.cart__item"));
       // On enleve le comportement par défaut (redirection du lien)
       e.preventDefault();
-      // Avec target, on cible l'element ou l'objet "e" ?????? et avec closest,
-      // On recherche l'article ayant la classe "cart__item le plus proche et ceci dans les parents ???????
-      // en renvoyant un element ou ancetres ??????"
+      // Avec target, on cible l'objet à l'origine de l'evenement
+      // Avec closest, on recherche l'article le plus proche ayant la classe "cart__item en remontant jusqu'aux parents
+      // Cela Renvoie l'ancetre le plus proche de l'element courant correpondant aux critères
       let articleToDelete = e.target.closest("article.cart__item");
-      // Une fois l'elt ou l'ancetre trouvé on veut obtenir la valeur contenu dans l'attribut "data-id"
+      // Ensuite on veut les valeurs des attributs "data-id" et "data-color" dans le résultat precedemment obtenu
       let dataId = articleToDelete.getAttribute("data-id");
       let dataColor = articleToDelete.getAttribute("data-color");
-      console.log(dataId);
-      console.log(dataColor);
+      // Suppression de l'article au click dans le dom
       section2.removeChild(articleToDelete);
-
-      delInLs(dataId, dataColor, fullCart);
+      // Recherche dans fullCart de l'index de l'article ayant l'id et la couleur de l'article supprimé du dom afin de
+      // de le supprimer dans l'array
+      const resultIndex = fullCart.findIndex(
+        (e) => e.idProduct === dataId && e.colorProduct === dataColor
+      );
+      /* console.log("resultIndex", resultIndex); */
+      fullCart.splice(resultIndex, 1);
+      productInLocalStorage.splice(resultIndex, 1);
+      localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+      // Si le panier est vide on supprime la clé product du ls, sinon on recalcule tout
+      if (productInLocalStorage == null || productInLocalStorage == 0) {
+        empty();
+        localStorage.removeItem("product");
+      } else {
+        calculTotalQuantity();
+        calculTotalPrice(fullCart);
+      }
     });
   }
 }
 
+// On chg la qté
 function createEventChangeQty(fullcart) {
+  // On selectionne tous les input liés à la qty
   let inputQty = document.querySelectorAll(".itemQuantity");
   for (let k = 0; k < inputQty.length; k++) {
+    // chaque fois que l'on fait un chgt, on veut cibler l'obj afin d'obtenir son id et sa couleur
     inputQty[k].addEventListener("change", (e) => {
       let articleToChangeQty = e.target.closest("article.cart__item");
       let dataId = articleToChangeQty.getAttribute("data-id");
       let dataColor = articleToChangeQty.getAttribute("data-color");
+      // On veut la nouvelle qty dans l'input
       let neWQty = inputQty[k].value;
+      // On veut l'index du produit dans le ls correpondant au pdt dont la qty a changé (grace a la couleur et l'id recuperé)
       let obtainIndex = productInLocalStorage.findIndex(
         (elt) => elt.idProduct === dataId && elt.colorProduct === dataColor
       );
-      console.log(dataId);
-      console.log(dataColor);
-      console.log(neWQty);
-      console.log(obtainIndex);
       if (obtainIndex !== -1) {
+        // Si on l'obtient, on recupere la qty et on la change,
+        // On ecrase ensuite l'ancienne entrée en renvoyant la nouvelle dans le ls et on recalcule les totaux
         productInLocalStorage[obtainIndex].quantityProduct = parseInt(neWQty);
         localStorage.setItem("product", JSON.stringify(productInLocalStorage));
         calculTotalQuantity();
@@ -189,29 +206,3 @@ function createEventChangeQty(fullcart) {
     });
   }
 }
-
-function delInLs(dataId, dataColor, fullCart) {
-  productInLocalStorage = productInLocalStorage.filter(
-    (el) => el.idProduct !== dataId || el.colorProduct !== dataColor
-  );
-  localStorage.setItem("product", JSON.stringify(productInLocalStorage));
-  console.log(productInLocalStorage);
-  if (productInLocalStorage == null || productInLocalStorage == 0) {
-    empty();
-    localStorage.removeItem("product");
-  } else {
-    calculTotalQuantity();
-    calculTotalPrice(fullCart);
-  }
-
-  /* window.location.href = "cart.html"; */
-}
-
-/* let deleteInLs = productInLocalStorage[j].idProduct;
-      console.log(deleteInLs); */
-
-/* let remainingItem = document.querySelectorAll(".cart__item");
-      for (let k = 0; k < remainingItem.length; k++) {
-        let everyIdArticle = remainingItem[k].getAttribute("data-Id");
-        console.log(everyIdArticle);
-      } */
