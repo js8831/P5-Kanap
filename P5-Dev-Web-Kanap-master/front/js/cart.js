@@ -127,13 +127,11 @@ function calculTotalPrice(fullCart) {
     // Multiplication du prix par sa quantité correspondante et ajout dans l'array précedement crée
     // On obtient le prix total par produit
     sumPriceByProduct.push(price * qty);
-    console.log(sumPriceByProduct);
   }
   // Somme des totaux précedent
   let sumPriceTotal = sumPriceByProduct.reduce((accu, valCurrent) => {
     return accu + valCurrent;
   });
-  console.log(sumPriceTotal);
   // Récupération de l'element et injection de la somme total dynamiquement
   let totalPrice = document.getElementById("totalPrice");
   totalPrice.innerText = sumPriceTotal;
@@ -206,3 +204,50 @@ function createEventChangeQty(fullcart) {
     });
   }
 }
+
+//-------Le formulaire-------
+
+let contactObject = {
+  firstName: document.getElementById("firstName").value,
+  lastName: document.getElementById("lastName").value,
+  address: document.getElementById("address").value,
+  city: document.getElementById("city").value,
+  email: document.getElementById("email").value,
+};
+console.log(contactObject);
+
+function createEventOrder() {
+  let btnOrder = document.getElementById("order");
+  btnOrder.addEventListener("click", function (e) {
+    e.preventDefault();
+    console.log("ça marche", e);
+    localStorage.setItem("contact", JSON.stringify(contactObject));
+  });
+}
+
+createEventOrder();
+
+let contactInLs = JSON.parse(localStorage.getItem("contact"));
+
+//-------Regex-------
+
+let matchName = /^([a-zéèçœàA-Z]{2,15})-?([a-zéèçœàA-Z]{2,15})?$/;
+let matchAddress = ""; /* chercher */
+let matchCity = /^([a-zéèçœàA-Z]{2,15})-?([a-zéèçœàA-Z]{2,15})?$/;
+let matchEmail = /^[_\w-]+@[\w-]+(\.[a-z]{2,3})$/;
+
+function firstName() {
+  if (!matchName.test(contactObject.firstName)) {
+    let errMsg = document.getElementById("firstNameErrorMsg");
+    errMsg.innerText = "invalid";
+  } else {
+    console.log("c'est ok");
+  }
+}
+
+//-------Envoi au serveur-------
+const toSend = {
+  productInLocalStorage,
+  contactObject,
+};
+console.log(toSend);
