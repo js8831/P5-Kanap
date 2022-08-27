@@ -216,7 +216,7 @@ let contactObject = {
 };
 console.log(contactObject);
 
-function createEventOrder() {
+function createEventOrder(contactObject) {
   let btnOrder = document.getElementById("order");
   btnOrder.addEventListener("click", function (e) {
     e.preventDefault();
@@ -224,8 +224,6 @@ function createEventOrder() {
     localStorage.setItem("contact", JSON.stringify(contactObject));
   });
 }
-
-createEventOrder();
 
 let contactInLs = JSON.parse(localStorage.getItem("contact"));
 
@@ -237,13 +235,18 @@ let matchCity = /^([a-zéèçœàA-Z]{2,15})-?([a-zéèçœàA-Z]{2,15})?$/;
 let matchEmail = /^[_\w-]+@[\w-]+(\.[a-z]{2,3})$/;
 
 function firstName() {
-  if (!matchName.test(contactObject.firstName)) {
-    let errMsg = document.getElementById("firstNameErrorMsg");
-    errMsg.innerText = "invalid";
-  } else {
-    console.log("c'est ok");
-  }
+  let fName = document.getElementById("firstName");
+  fName.addEventListener("input", function (e) {
+    if (!matchName.test(contactObject.firstName)) {
+      let errMsg = document.getElementById("firstNameErrorMsg");
+      errMsg.innerText = "Invalide, veuillez...";
+    } else {
+      console.log("c'est ok", fName.value);
+      createEventOrder(contactObject.firstName);
+    }
+  });
 }
+firstName();
 
 //-------Envoi au serveur-------
 const toSend = {
