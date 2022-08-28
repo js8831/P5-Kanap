@@ -205,52 +205,87 @@ function createEventChangeQty(fullcart) {
   }
 }
 
-//-------Le formulaire-------
-
-let contactObject = {
-  firstName: document.getElementById("firstName").value,
-  lastName: document.getElementById("lastName").value,
-  address: document.getElementById("address").value,
-  city: document.getElementById("city").value,
-  email: document.getElementById("email").value,
-};
-console.log(contactObject);
-
-function createEventOrder(contactObject) {
-  let btnOrder = document.getElementById("order");
-  btnOrder.addEventListener("click", function (e) {
-    e.preventDefault();
-    console.log("ça marche", e);
-    localStorage.setItem("contact", JSON.stringify(contactObject));
-  });
-}
-
-let contactInLs = JSON.parse(localStorage.getItem("contact"));
+//------------------- FORMULAIRE -------------------------
 
 //-------Regex-------
 
-let matchName = /^([a-zéèçœàA-Z]{2,15})-?([a-zéèçœàA-Z]{2,15})?$/;
+let matchName = /^[a-zéèçœà\-A-Z]{2,20}$/;
 let matchAddress = ""; /* chercher */
-let matchCity = /^([a-zéèçœàA-Z]{2,15})-?([a-zéèçœàA-Z]{2,15})?$/;
+let matchCity = matchName;
 let matchEmail = /^[_\w-]+@[\w-]+(\.[a-z]{2,3})$/;
 
+//-------Les variables-------
+
+let fNameErrMsg = document.getElementById("firstNameErrorMsg");
+let fName = document.getElementById("firstName");
+
+let lNameErrMsg = document.getElementById("lastNameErrorMsg");
+let lName = document.getElementById("lastName");
+
+let emailErrMsg = document.getElementById("emailErrorMsg");
+let email = document.getElementById("email");
+
+let cityErrMsg = document.getElementById("cityErrorMsg");
+let city = document.getElementById("city");
+
+//-------Les Fonctions-------
+
 function firstName() {
-  let fName = document.getElementById("firstName");
   fName.addEventListener("input", function (e) {
-    if (!matchName.test(contactObject.firstName)) {
-      let errMsg = document.getElementById("firstNameErrorMsg");
-      errMsg.innerText = "Invalide, veuillez...";
+    if (matchName.test(fName.value)) {
+      fNameErrMsg.innerText = "";
     } else {
-      console.log("c'est ok", fName.value);
-      createEventOrder(contactObject.firstName);
+      fNameErrMsg.innerText = "Invalide, veuillez...";
     }
   });
 }
 firstName();
 
-//-------Envoi au serveur-------
-const toSend = {
-  productInLocalStorage,
-  contactObject,
-};
-console.log(toSend);
+function lastName() {
+  lName.addEventListener("input", function (e) {
+    if (matchName.test(lName.value)) {
+      lNameErrMsg.innerText = "";
+    } else {
+      lNameErrMsg.innerText = "Invalide, veuillez...";
+    }
+  });
+}
+lastName();
+
+function getEmail() {
+  email.addEventListener("input", function (e) {
+    if (matchEmail.test(email.value)) {
+      emailErrMsg.innerText = "";
+    } else {
+      emailErrMsg.innerText = "Invalide, veuillez...";
+    }
+  });
+}
+getEmail();
+
+function getCity() {
+  city.addEventListener("input", function (e) {
+    if (matchCity.test(city.value)) {
+      cityErrMsg.innerText = "";
+    } else {
+      cityErrMsg.innerText = "Invalide, veuillez...";
+    }
+  });
+}
+getCity();
+
+function createEventOrder() {
+  let btnOrder = document.getElementById("order");
+  btnOrder.addEventListener("click", function (e) {
+    e.preventDefault();
+    let contactObject = {
+      firstName: document.getElementById("firstName").value,
+      lastName: document.getElementById("lastName").value,
+      address: document.getElementById("address").value,
+      city: document.getElementById("city").value,
+      email: document.getElementById("email").value,
+    };
+    console.log(contactObject);
+  });
+}
+createEventOrder()
