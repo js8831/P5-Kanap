@@ -1,3 +1,5 @@
+//-------LE PANIER-------
+
 //-------Déclaration des variables-------
 
 // Récuperation des produits dans le LS
@@ -209,12 +211,22 @@ function createEventChangeQty(fullcart) {
 
 //-------Regex-------
 
-let matchName = /^[a-zéèçœà\-A-Z]{2,20}$/;
-let matchAddress = ""; /* chercher */
+let matchName = /^(?=.{2,40}$)[a-zA-Z]+(?:[-'\s][a-zA-Z]+)*$/; // comprendre //
+let matchAddress = /^[0-9A-Za-zÀ-ÖØ-öø-ÿ\-\'\ ]{5,30}$/; // comprendre //
 let matchCity = matchName;
 let matchEmail = /^[_\w-]+@[\w-]+(\.[a-z]{2,3})$/;
 
 //-------Les variables-------
+
+let checkInp = {
+  firstName: false,
+  lastName: false,
+  address: false,
+  city: false,
+  email: false,
+};
+
+/* let formOk = false; */
 
 let fNameErrMsg = document.getElementById("firstNameErrorMsg");
 let fName = document.getElementById("firstName");
@@ -228,51 +240,52 @@ let email = document.getElementById("email");
 let cityErrMsg = document.getElementById("cityErrorMsg");
 let city = document.getElementById("city");
 
+let addressErrMsg = document.getElementById("addressErrorMsg");
+let address = document.getElementById("address");
+
+let msgCity =
+  "Invalide, veuillez renseigner un nom de ville compris entre 2 et 20 caractères";
+let msgEmail =
+  "Invalide, veuillez renseigner une adresse email de type : nom@domaine.extension";
+let msgFname =
+  "Invalide, veuillez renseigner un prénom compris entre 2 et 20 caractères";
+let msgLname =
+  "Invalide, veuillez renseigner un nom compris entre 2 et 20 caractères";
+let msgAddress = "Invalide, veuillez renseigner une adresse complète";
+
 //-------Les Fonctions-------
 
-function firstName() {
+function checkInput(inputName, match, errMsg, contentErrMsg, checkInp) {
+  inputName.addEventListener("input", function (e) {
+    if (match.test(inputName.value)) {
+      errMsg.innerText = "";
+      checkInp = true;
+    } else {
+      errMsg.innerText = contentErrMsg;
+      checkInp = false;
+    }
+  });
+}
+
+checkInput(fName, matchName, fNameErrMsg, msgFname, checkInp.firstName);
+checkInput(lName, matchName, lNameErrMsg, msgLname);
+checkInput(email, matchEmail, emailErrMsg, msgEmail);
+checkInput(city, matchName, cityErrMsg, msgCity);
+checkInput(address, matchAddress, addressErrMsg, msgAddress);
+
+/* function firstName() {
   fName.addEventListener("input", function (e) {
     if (matchName.test(fName.value)) {
       fNameErrMsg.innerText = "";
+      checkInput.firstName = true;
     } else {
-      fNameErrMsg.innerText = "Invalide, veuillez...";
+      fNameErrMsg.innerText =
+        "Invalide, veuillez renseigner un prénom compris entre 2 et 20 caractères";
+      checkInput.firstName = false;
     }
   });
 }
-firstName();
-
-function lastName() {
-  lName.addEventListener("input", function (e) {
-    if (matchName.test(lName.value)) {
-      lNameErrMsg.innerText = "";
-    } else {
-      lNameErrMsg.innerText = "Invalide, veuillez...";
-    }
-  });
-}
-lastName();
-
-function getEmail() {
-  email.addEventListener("input", function (e) {
-    if (matchEmail.test(email.value)) {
-      emailErrMsg.innerText = "";
-    } else {
-      emailErrMsg.innerText = "Invalide, veuillez...";
-    }
-  });
-}
-getEmail();
-
-function getCity() {
-  city.addEventListener("input", function (e) {
-    if (matchCity.test(city.value)) {
-      cityErrMsg.innerText = "";
-    } else {
-      cityErrMsg.innerText = "Invalide, veuillez...";
-    }
-  });
-}
-getCity();
+firstName(); */
 
 function createEventOrder() {
   let btnOrder = document.getElementById("order");
@@ -288,4 +301,21 @@ function createEventOrder() {
     console.log(contactObject);
   });
 }
-createEventOrder()
+
+createEventOrder();
+
+/*  formOk = true;
+    console.log(checkInput); */
+/* for (let input in checkInput) {
+      console.log(input[input]);
+      if (!input) {
+        console.log(checkInput);
+        formOk = false;
+      }
+    } */
+/*  checkInput.forEach((input) => {
+      console.log(input);
+    }); */
+/*  if (formOk) {
+      console.log("ok");
+    } */
