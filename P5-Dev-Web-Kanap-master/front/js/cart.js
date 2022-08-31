@@ -218,15 +218,14 @@ let matchEmail = /^[_\w-]+@[\w-]+(\.[a-z]{2,3})$/;
 
 //-------Les variables-------
 
-let checkInp = {
+// Objet qui servira à contrôler si tout le formulaire est bien rempli grâce a "true" dans la fct checkInput
+let allInputsCheck = {
   firstName: false,
   lastName: false,
   address: false,
   city: false,
   email: false,
 };
-
-/* let formOk = false; */
 
 let fNameErrMsg = document.getElementById("firstNameErrorMsg");
 let fName = document.getElementById("firstName");
@@ -255,42 +254,33 @@ let msgAddress = "Invalide, veuillez renseigner une adresse complète";
 
 //-------Les Fonctions-------
 
-function checkInput(inputName, match, errMsg, contentErrMsg, checkInp) {
+function checkInput(inputName, match, errMsg, contentErrMsg) {
+  // Au chgt de chaque input on test si le regex match avec le contenu
+  // Si oui on renvoit true et aucun msg d'erreur sinon l'inverse 
   inputName.addEventListener("input", function (e) {
+    // Sert à obtenir l'id de chaque input qui correspond au nom de clé de chaque paire dans l'objet "allInputsCheck"
+    const myInput = inputName.getAttribute("id")
     if (match.test(inputName.value)) {
       errMsg.innerText = "";
-      checkInp = true;
+      allInputsCheck[myInput] = true;
     } else {
       errMsg.innerText = contentErrMsg;
-      checkInp = false;
+      allInputsCheck[myInput] = false;
     }
   });
 }
 
-checkInput(fName, matchName, fNameErrMsg, msgFname, checkInp.firstName);
+checkInput(fName, matchName, fNameErrMsg, msgFname);
 checkInput(lName, matchName, lNameErrMsg, msgLname);
 checkInput(email, matchEmail, emailErrMsg, msgEmail);
 checkInput(city, matchName, cityErrMsg, msgCity);
 checkInput(address, matchAddress, addressErrMsg, msgAddress);
 
-/* function firstName() {
-  fName.addEventListener("input", function (e) {
-    if (matchName.test(fName.value)) {
-      fNameErrMsg.innerText = "";
-      checkInput.firstName = true;
-    } else {
-      fNameErrMsg.innerText =
-        "Invalide, veuillez renseigner un prénom compris entre 2 et 20 caractères";
-      checkInput.firstName = false;
-    }
-  });
-}
-firstName(); */
-
 function createEventOrder() {
   let btnOrder = document.getElementById("order");
   btnOrder.addEventListener("click", function (e) {
     e.preventDefault();
+    // Dès que l'on clique sur le bouton commander, cela crée l'objet suivant :
     let contactObject = {
       firstName: document.getElementById("firstName").value,
       lastName: document.getElementById("lastName").value,
@@ -299,23 +289,43 @@ function createEventOrder() {
       email: document.getElementById("email").value,
     };
     console.log(contactObject);
+    // On suppose que tout le formulaire est bien rempli
+    let formOk = true
+    // Pour chaque entrée de l'obj "allInputsCheck" on veut la paire clé/valeur
+    for (const[key,value]of Object.entries(allInputsCheck)){
+      // S'il y a un seul false dans les valeurs, le form passe à false
+      if (!value){
+        formOk = false
+      }
+    }
+     console.log("le formulaire est",formOk);
+     // S'il form reste "true".................
+      if (formOk) {
+        let request = fetch("http://localhost:3000/api/products/order", {
+        // On veut poster 
+        method: "POST",
+        // En tête qui précise le type de contenu. Ici cela sera du JSON.
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        // il faut convertir le corps (le contenu de la requete) d'objet JS à JSON
+        body: JSON.stringify(contactObject, productInLocalStorage),
+        });
+      } 
+      else {alert("Les champs sont mal remplis")}
   });
 }
 
 createEventOrder();
 
-/*  formOk = true;
-    console.log(checkInput); */
-/* for (let input in checkInput) {
-      console.log(input[input]);
-      if (!input) {
-        console.log(checkInput);
-        formOk = false;
-      }
-    } */
-/*  checkInput.forEach((input) => {
-      console.log(input);
-    }); */
-/*  if (formOk) {
-      console.log("ok");
-    } */
+/* // Verification 
+request.then(async (response)=>{
+  try {
+    // Retourne ce qu'on envoi au format JSON
+    let contentJson = await response.json ();
+    console.log(response, contentJson);
+  }
+  catch (error) {
+  console.log(error);
+  }
+}) */
