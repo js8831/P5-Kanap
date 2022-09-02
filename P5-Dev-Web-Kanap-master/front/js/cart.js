@@ -4,6 +4,8 @@
 
 // Récuperation des produits dans le LS
 let productInLocalStorage = JSON.parse(localStorage.getItem("product"));
+// Création du tableau à remplir
+let products = [];
 // Récuperation des balises "section" pour des fonctions utilisées plus bas
 let section1 = document.querySelector("#cartAndFormContainer section.cart");
 let section2 = document.getElementById("cart__items");
@@ -64,6 +66,8 @@ function empty() {
 // Fonction qui push dans l'array fullCart un objet de 6 propriétés (paires clé - valeur) pour chaque article dans le LS
 function createFullCart(productApi, fullCart) {
   productInLocalStorage.forEach((p) => {
+    // Remplissage du tableau products avec les id
+    products.push(p.idProduct);
     //Récup. de tous les produits du serveur un par un
     productApi.forEach((product) => {
       // Si un id est commun au 2 objets comparés
@@ -179,7 +183,7 @@ function createEventDelete(fullCart) {
   }
 }
 
-// On chg la qté
+// Change la qté
 function createEventChangeQty(fullcart) {
   // On selectionne tous les input liés à la qty
   let inputQty = document.querySelectorAll(".itemQuantity");
@@ -256,10 +260,10 @@ let msgAddress = "Invalide, veuillez renseigner une adresse complète";
 
 function checkInput(inputName, match, errMsg, contentErrMsg) {
   // Au chgt de chaque input on test si le regex match avec le contenu
-  // Si oui on renvoit true et aucun msg d'erreur sinon l'inverse 
+  // Si oui on renvoit true et aucun msg d'erreur sinon l'inverse
   inputName.addEventListener("input", function (e) {
     // Sert à obtenir l'id de chaque input qui correspond au nom de clé de chaque paire dans l'objet "allInputsCheck"
-    const myInput = inputName.getAttribute("id")
+    const myInput = inputName.getAttribute("id");
     if (match.test(inputName.value)) {
       errMsg.innerText = "";
       allInputsCheck[myInput] = true;
@@ -276,56 +280,80 @@ checkInput(email, matchEmail, emailErrMsg, msgEmail);
 checkInput(city, matchName, cityErrMsg, msgCity);
 checkInput(address, matchAddress, addressErrMsg, msgAddress);
 
+// Fct qui enclenche la requête POST
+async function submitOrder(order) {
+  // Déclaration du paramètre de la fct fetch pour la requête
+  const options = {
+    method: "POST",
+    // il faut convertir le corps (le contenu de la requête) en JSON
+    body: JSON.stringify(order),
+    // En tête qui précise le type de contenu (JSON)
+    headers: { "Content-Type": "application/json" },
+  };
+  fetch("http://localhost:3000/api/products/order", options)
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data, data.orderId);
+      confirmation(data.orderId)
+
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
+// Redirection
+function confirmation (id) {
+  document.location.href = `confirmation.html?order=${id}`;
+}
+
+// Création de l'evenement au clique sur le bouton "commander"
 function createEventOrder() {
   let btnOrder = document.getElementById("order");
   btnOrder.addEventListener("click", function (e) {
     e.preventDefault();
     // Dès que l'on clique sur le bouton commander, cela crée l'objet suivant :
-    let contactObject = {
+    let contact = {
       firstName: document.getElementById("firstName").value,
       lastName: document.getElementById("lastName").value,
       address: document.getElementById("address").value,
       city: document.getElementById("city").value,
       email: document.getElementById("email").value,
     };
-    console.log(contactObject);
+    // Création de la commande avec les noms exactes ! sinon erreur 400
+    const order = { contact, products };
     // On suppose que tout le formulaire est bien rempli
-    let formOk = true
+    let formOk = true;
     // Pour chaque entrée de l'obj "allInputsCheck" on veut la paire clé/valeur
-    for (const[key,value]of Object.entries(allInputsCheck)){
-      // S'il y a un seul false dans les valeurs, le form passe à false
-      if (!value){
-        formOk = false
+    for (const [key, value] of Object.entries(allInputsCheck)) {
+      // S'il y a un seul false dans les valeurs, le form passe à false. C'est une boucle qui vérifie chaque paire
+      if (!value) {
+        formOk = false;
       }
     }
-     console.log("le formulaire est",formOk);
-     // S'il form reste "true".................
-      if (formOk) {
-        let request = fetch("http://localhost:3000/api/products/order", {
-        // On veut poster 
-        method: "POST",
-        // En tête qui précise le type de contenu. Ici cela sera du JSON.
-        headers: {
-          "Content-Type": "application/json;charset=utf-8",
-        },
-        // il faut convertir le corps (le contenu de la requete) d'objet JS à JSON
-        body: JSON.stringify(contactObject, productInLocalStorage),
-        });
-      } 
-      else {alert("Les champs sont mal remplis")}
+    console.log("le formulaire est", formOk);
+    // Si le form reste "true" on envoie
+    if (formOk) {
+      submitOrder(order);
+    } else {
+      alert("Les champs sont mal remplis");
+    }
   });
 }
 
 createEventOrder();
 
-/* // Verification 
-request.then(async (response)=>{
-  try {
-    // Retourne ce qu'on envoi au format JSON
-    let contentJson = await response.json ();
-    console.log(response, contentJson);
-  }
-  catch (error) {
-  console.log(error);
-  }
-}) */
+/* fetch("http://localhost:3000/api/products/order")
+  .then((res) => {
+    if (res) {
+      return res.json();
+    }
+  })
+  .then((values) => {
+    console.log(values);
+  })
+  .catch((err) => {
+    console.log(err);
+  }); */
