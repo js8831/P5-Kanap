@@ -1,13 +1,18 @@
-// Récuperation des propriétés de l'URL
+// Récuperation complète des propriétés de l'URL en créant un objet ({}) URL
+// avec pour paramètre : l'url du document en cours et le tout dans une variable (API URL)
 let urlData = new URL(document.location);
-// Récuperation des paramètres de l'URL
+// Récuperation du ou des paramètre(s) de l'URL que l'on a inséré sur la page d'accueil "script"
+// en mettant l'id dans le lien de redirection après la chaine d'interrogation (search = ? = chaine d'interrogation/recherche)
 let params1 = urlData.search;
-// ?????????????????????????????
+// la propriété URL.searchParams permet d'analyser plus facilement les paramètres passés à la chaîne de recherche
 let params2 = urlData.searchParams;
-// Récuperation de l'ID de l'URL dans le paramètre afin d'obtenir les propriétés de chaque canapé
+// Récuperation de la valeur de la variable "id" dans le paramètre d'URL afin d'obtenir les propriétés du canapé correspondant
 let id = params2.get("id");
+// On récupère l'element possedant l'id "quantity" et "color"
+let quantity = document.getElementById("quantity");
+let color = document.getElementById("colors");
 
-// Récuperation des propriétés d'un canapé par ID
+// Récuperation par fetch des propriétés du canapé ciblé grâce à l'id dans l'URL
 fetch(`http://localhost:3000/api/products/${id}`)
   .then((res) => {
     if (res) {
@@ -23,50 +28,40 @@ fetch(`http://localhost:3000/api/products/${id}`)
     console.log(error);
   });
 
-// Crée une div avec id placé avant le btn "ajouter"
+// Création d'une div avec un id "msg" et que l'on place aprés l'input "quantity" qui permettra l'ajout ou non de message
 function createMsgElt() {
-  // On récupère l'element "quantity"
-  let target = document.getElementById("quantity");
-  // On crée une div
+  // On crée un élément de type div
   let div = document.createElement("div");
-  // On donne un id=msg à cette div
+  // On donne un id="msg" à cette div
   div.setAttribute("id", "msg");
-  // On met la div avant le bouton "ajouter" ?
-  target.after(div);
+  // On met la div après l'input "quantity"
+  quantity.after(div);
 }
 
-// Cache le message en ecoutant l'evenement "input"
-// Peut on optimiser ???????
-function hideMsg() {
-  let quantity = document.getElementById("quantity");
-  let color = document.getElementById("colors");
-  quantity.addEventListener("input", function () {
-    let errorElement = document.getElementById("msg");
-    errorElement.innerText = "";
-  });
-  color.addEventListener("input", function () {
+// Vide la div ayant l'id "msg" en ecoutant l'évenement "input" si par exemple il y a correction d'erreur
+function hideMsg(elt) {
+  elt.addEventListener("input", function () {
     let errorElement = document.getElementById("msg");
     errorElement.innerText = "";
   });
 }
 
-// Affiche le paramètre dans la div ayant pour id=msg 
+// Affiche l'argument dans la div ayant pour id "msg"
 function displayMsg(text) {
   let errorElement = document.getElementById("msg");
   errorElement.innerHTML = text;
 }
 
-// Ajoute les couleurs une par une
+// Incrémente les couleurs une par une dans l'input colors
 function addColors(choice) {
-  let colors = document.getElementById("colors");
-  colors.innerHTML += `<option value="${choice}">${choice}</option>`;
+  color.innerHTML += `<option value="${choice}">${choice}</option>`;
 }
 
 // Ajoute les valeurs (name, price, photo et description) d'un canape sur la page 2
 function buildHtml(product) {
   // Récuperation de l'élément par l'id
   let name = document.getElementById("title");
-  // Une fois l'élément recupéré : ajout des valeurs de "product" via "innerHTML"
+  // Une fois l'élément recupéré : ajout des valeurs de "array.key" via "innerHTML"
   name.innerHTML = product.name;
   let price = document.getElementById("price");
   price.innerHTML = product.price;
@@ -74,9 +69,9 @@ function buildHtml(product) {
   description.innerHTML = product.description;
   let img = document.querySelector(".item__img");
   img.innerHTML = `<img src="${product.imageUrl}" alt="Photographie d'un canapé">`;
-  // Récuperation des couleurs d'un canapé, une par une grace à map qui itère (boucle)
-  product.colors.map(function (color) {
-    addColors(color);
+  // Récuperation des couleurs d'un canapé, une par une grace à map qui itère en boucle sur la clé colors
+  product.colors.map(function (everyColor) {
+    addColors(everyColor);
   });
 }
 
@@ -86,34 +81,34 @@ function buildHtml(product) {
 function addButtonEvent(pdts) {
   let elt = document.getElementById("addToCart");
   elt.addEventListener("click", function (event) {
-    // Ici ou plus bas comme dans le sandbox ?
     event.preventDefault();
     checkIf(pdts);
   });
 }
 
-// Contenu de checkIf
+// Contenu de checkIf qui vérifie si les valeurs sont bien renseignées
 function checkIf(val) {
-  // Appel des fct créees plus haut
+  // Appel des fct créees plus haut en suposant que tout est ok.
   createMsgElt();
-  hideMsg();
+  hideMsg(quantity);
+  hideMsg(color);
 
-  // Création de l'objet JS contenant l'ID, la qté et la couleur
+  // Création de l'objet JS contenant l'id, la qté et la couleur qui sera stocké dans le LS si tout est ok, pour la page cart
   let optionProduct = {
     idProduct: val._id,
     quantityProduct: document.getElementById("quantity").value,
     colorProduct: document.getElementById("colors").value,
   };
-  // Vérification si la qté est comprise entre 0 et 100
+  // Vérification si la qté est comprise entre 0 et 100 et si la couleur est renseigné
   if (
     optionProduct.quantityProduct > 0 &&
     optionProduct.quantityProduct < 101 &&
     optionProduct.colorProduct !== ""
   ) {
-    // Si oui, appel de la fct qui permet d'ajouter dans le LS
+    // Si oui, appel de la fct (décrite plus bas) qui permet d'ajouter dans le LS : l'objet "optionProduct"
     addToLocalStorage(optionProduct);
+    // Si non, des alertes apparaîssent si la qté = 0, si la qté est sup. à 100 et s'il n'y a pas de couleur renseigné
   } else if (optionProduct.quantityProduct == 0) {
-    // Si non, des alertes apparaîssent
     displayMsg(
       `<span style="background-color:red"> Ajouter une quantité comprise entre 1 et 100, merci :)</span>`
     );
@@ -128,25 +123,26 @@ function checkIf(val) {
   }
 }
 
-// Contenu de addToLocalStorage
+// Contenu de la fct "addToLocalStorage" qui ajoute au ls
 function addToLocalStorage(optionProduct) {
-  // Récupération de la clé produit (avec toutes ses valeurs) dans le LS si elle existe
-  // Cela en convertissant le résultat de JSON à objet JS pour l'afficher ???????????????????????
+  // Récupération de la clé produit (avec toutes ses propriétés) dans le LS si elle existe
+  // Cela en convertissant le résultat de JSON à objet JS pour l'afficher et travailler dessus plus facilement.
   let productInLocalStorage = JSON.parse(localStorage.getItem("product"));
-  // Si le LS est vide, on y ajoute une nouvelle clé produit avec ses valeurs via un array.
-  // Pourquoi passer par un array ???????????? pour y mettre plusieurs objets JS ou du json ?
+  // Si le LS est vide, on y ajoute une clé produit avec l'objet JS qu'on push dans un array
   if (productInLocalStorage == null) {
     productInLocalStorage = [];
     productInLocalStorage.push(optionProduct),
       localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+    // Création et message par ajout de pdts grâce aux fcts ci-dessus
     createMsgElt();
     displayMsg(
       `<span style="background-color:#3DED97">Nouveau produit ajouté avec succès</span>`
     );
-    setHide();
-    // Sinon si le LS contient des produits, on compare si le nouveau produit
-    // à ajouter existe deja dans le LS (en comparant les id et les couleur).
-    // Si il y'a des valeurs identiques, cela nous renvoit l'index du premier element (ici produit) correspondant aux critères.
+    // Ajout d'un timer pour la disparition des msgs d'ajout
+    timeHide();
+    // Sinon si le LS contient deja des produits, on compare si le nouveau produit
+    // à ajouter existe deja dans le LS (en comparant les id et les couleur) grace à findIndex
+    // Si il y'a des valeurs identiques, cela nous renvoit l'index du premier produit correspondant aux critères de tri
   } else {
     if (productInLocalStorage !== null) {
       let obtainIndex = productInLocalStorage.findIndex(
@@ -154,8 +150,8 @@ function addToLocalStorage(optionProduct) {
           elt.idProduct === optionProduct.idProduct &&
           elt.colorProduct === optionProduct.colorProduct
       );
-      // Si c'est le cas, on ajuste la qté du produit identique dans le LS qu'on avait appelé precedement ligne 87
-      // et on renvoie le nouveau array en écrasant l'ancien car ils portent le meme nom de clé ?????????
+      // Si c'est le cas (diff de -1), on ajuste la qté du produit identique dans le LS grace à son index
+      // et on renvoie le nouveau array en écrasant l'ancien car ils portent le meme nom de clé
       // parseInt permet de convertir les strings en entier pour faire une addition de la qté du produit a ajouter avec le pdt deja présent dans le LS
       if (obtainIndex !== -1) {
         productInLocalStorage[obtainIndex].quantityProduct =
@@ -166,8 +162,9 @@ function addToLocalStorage(optionProduct) {
         displayMsg(
           `<span style="background-color:#3DED97">Produit déjà ajouté, la quantité sera ajustée</span>`
         );
-        setHide();
-        // Si ce n'est pas le cas, on ajoute le nouveau produit
+        timeHide();
+        // Si ce n'est pas le cas (le ls n'est pas vide et le produit à ajouter n'est pas identique),
+        // on ajoute le nouveau produit en écrasant également
       } else {
         productInLocalStorage.push(optionProduct),
           localStorage.setItem(
@@ -178,27 +175,21 @@ function addToLocalStorage(optionProduct) {
         displayMsg(
           `<span style="background-color:#3DED97">Nouveau produit ajouté avec succès</span>`
         );
-        setHide();
+        timeHide();
       }
     }
   }
 }
 
-// On peut supprimer le panier avec un setTimeOut ?
-
-// Cache les msg d'ajout dans le panier 
+// Cache les msg d'ajout dans le panier
 function hideAddMsg() {
   let errorElement = document.getElementById("msg");
   errorElement.innerText = "";
 }
 
-// Disparition des msg d'ajout dans un délai de 2s (a optimiser ????)
-// précedement fait avec un addeventlistener (mouseover ou out ??????)
-function setHide() {
+// Disparition des msg d'ajout dans un délai de 2s
+function timeHide() {
   setTimeout(() => {
     hideAddMsg();
   }, 2000);
 }
-
-
-
