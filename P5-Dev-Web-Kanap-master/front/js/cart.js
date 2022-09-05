@@ -251,24 +251,14 @@ let city = document.getElementById("city");
 let addressErrMsg = document.getElementById("addressErrorMsg");
 let address = document.getElementById("address");
 
-let msgCity =
-  "Invalide, veuillez renseigner un nom de ville compris entre 2 et 20 caractères";
-let msgEmail =
-  "Invalide, veuillez renseigner une adresse email de type : nom@domaine.extension";
-let msgFname =
-  "Invalide, veuillez renseigner un prénom compris entre 2 et 20 caractères";
-let msgLname =
-  "Invalide, veuillez renseigner un nom compris entre 2 et 20 caractères";
-let msgAddress = "Invalide, veuillez renseigner une adresse complète";
-
 //-------Les Fonctions-------
 
 function checkInput(inputName, match, errMsg, contentErrMsg) {
-  // Au chgt de chaque input on test si le regex match avec le contenu
-  // Si oui on renvoit true et aucun msg d'erreur sinon l'inverse
+  // Au chgt de chaque input on test si le regex match avec la valeur de l'input
   inputName.addEventListener("input", function (e) {
-    // Sert à obtenir l'id de chaque input qui correspond au nom de clé de chaque paire dans l'objet "allInputsCheck"
+    // Sert à obtenir l'id de chaque input qui est = au nom de clé de chaque paire dans l'objet JS "allInputsCheck"
     const myInput = inputName.getAttribute("id");
+    // Si ça match on renvoit true dans l'objet JS et aucun msg d'erreur sinon l'inverse
     if (match.test(inputName.value)) {
       errMsg.innerText = "";
       allInputsCheck[myInput] = true;
@@ -279,15 +269,40 @@ function checkInput(inputName, match, errMsg, contentErrMsg) {
   });
 }
 
-checkInput(fName, matchName, fNameErrMsg, msgFname);
-checkInput(lName, matchName, lNameErrMsg, msgLname);
-checkInput(email, matchEmail, emailErrMsg, msgEmail);
-checkInput(city, matchName, cityErrMsg, msgCity);
-checkInput(address, matchAddress, addressErrMsg, msgAddress);
+checkInput(
+  fName,
+  matchName,
+  fNameErrMsg,
+  "Invalide, veuillez renseigner un prénom compris entre 2 et 20 caractères"
+);
+checkInput(
+  lName,
+  matchName,
+  lNameErrMsg,
+  "Invalide, veuillez renseigner un nom compris entre 2 et 20 caractères"
+);
+checkInput(
+  email,
+  matchEmail,
+  emailErrMsg,
+  "Invalide, veuillez renseigner une adresse email de type : nom@domaine.extension"
+);
+checkInput(
+  city,
+  matchName,
+  cityErrMsg,
+  "Invalide, veuillez renseigner un nom de ville compris entre 2 et 20 caractères"
+);
+checkInput(
+  address,
+  matchAddress,
+  addressErrMsg,
+  "Invalide, veuillez renseigner une adresse complète"
+);
 
 // Fct qui enclenche la requête POST
 async function submitOrder(order) {
-  // Déclaration du paramètre de la fct fetch pour la requête
+  // Déclaration du paramètre "options" de la fct fetch pour la requête
   const options = {
     method: "POST",
     // il faut convertir le corps (le contenu de la requête) en JSON
@@ -297,6 +312,7 @@ async function submitOrder(order) {
   };
   fetch("http://localhost:3000/api/products/order", options)
     .then((response) => {
+      // return pour chainer
       return response.json();
     })
     .then((data) => {
@@ -308,7 +324,7 @@ async function submitOrder(order) {
     });
 }
 
-// Redirection
+// Redirection avec en paramètre l'orderId
 function confirmation(id) {
   document.location.href = `confirmation.html?order=${id}`;
 }
@@ -318,7 +334,7 @@ function createEventOrder() {
   let btnOrder = document.getElementById("order");
   btnOrder.addEventListener("click", function (e) {
     e.preventDefault();
-    // Dès que l'on clique sur le bouton commander, cela crée l'objet suivant :
+    // Dès que l'on clique sur le bouton commander, cela crée l'objet contact qui récupère les valeurs des inputs
     let contact = {
       firstName: document.getElementById("firstName").value,
       lastName: document.getElementById("lastName").value,
@@ -326,19 +342,19 @@ function createEventOrder() {
       city: document.getElementById("city").value,
       email: document.getElementById("email").value,
     };
-    // Création de la commande avec les noms exactes ! sinon erreur 400
+    // Création de l'objet commande avec les noms exactes ! sinon erreur 400
     const order = { contact, products };
     // On suppose que tout le formulaire est bien rempli
     let formOk = true;
     // Pour chaque entrée de l'obj "allInputsCheck" on veut la paire clé/valeur
     for (const [key, value] of Object.entries(allInputsCheck)) {
-      // S'il y a un seul false dans les valeurs, le form passe à false. C'est une boucle qui vérifie chaque paire
+      // S'il y a un seul false dans les valeurs, le formOk passe à false. C'est une boucle qui vérifie chaque paire
       if (!value) {
         formOk = false;
       }
     }
     console.log("le formulaire est", formOk);
-    // Si le form reste "true" on envoie
+    // Si le form reste "true" on envoie l'objet via la requete POST
     if (formOk) {
       submitOrder(order);
     } else {
