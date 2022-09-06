@@ -26,9 +26,15 @@ fetch("http://localhost:3000/api/products")
   })
   .catch((err) => {
     console.log(err);
+    emptyMsg();
   });
 
 //-------Les fonctions-------
+
+function emptyMsg() {
+  const emptyBasket = `<div class="limitedWidthBlockContainer"><span style="background-color:red">Le panier est vide, veuillez ajouter des produits.</span></div>`;
+  section1.innerHTML = emptyBasket;
+}
 
 // Incrémente dans le DOM, les articles dynamiquement crées avec fullCart.map
 function buildHtml(v) {
@@ -56,10 +62,9 @@ function buildHtml(v) {
 }
 
 // Si le panier est vide, on affiche le message ci-dessous dans la section1
-function empty() {
+function emptyLs() {
   if (productInLocalStorage == 0 || productInLocalStorage === null) {
-    const emptyBasket = `<div class="limitedWidthBlockContainer"><span style="background-color:red">Le panier est vide, veuillez ajouter des produits.</span></div>`;
-    section1.innerHTML = emptyBasket;
+    emptyMsg();
   }
 }
 
@@ -91,7 +96,7 @@ function createFullCart(productApi, fullCart) {
 
 // Initialise tout
 function init(productApi) {
-  empty();
+  emptyLs();
   // Si LS non vide on crée le panier
   if (productInLocalStorage !== null) {
     createFullCart(productApi, fullCart);
@@ -146,7 +151,7 @@ function calculTotalPrice(fullCart) {
 
 // Suppression et ce qui s'en suit
 function createEventDelete(fullCart) {
-  // On selectionne tous les btn delete 
+  // On selectionne tous les btn delete
   let btnDelete = document.querySelectorAll(".deleteItem");
   // On les indexe en fonction de la longueur
   for (let j = 0; j < btnDelete.length; j++) {
@@ -172,11 +177,11 @@ function createEventDelete(fullCart) {
       // On supprime cet article identifié par l'index. Le 1 correspond à une fois
       fullCart.splice(resultIndex, 1);
       productInLocalStorage.splice(resultIndex, 1);
-      // On met a jour le LS 
+      // On met a jour le LS
       localStorage.setItem("product", JSON.stringify(productInLocalStorage));
       // Si le panier est vide on supprime la clé product du ls, sinon on recalcule tout
       if (productInLocalStorage == null || productInLocalStorage == 0) {
-        empty();
+        emptyLs();
         localStorage.removeItem("product");
       } else {
         calculTotalQuantity();
