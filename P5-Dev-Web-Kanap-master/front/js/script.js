@@ -13,26 +13,27 @@ function emptyShop() {
   title2.innerText = "";
 }
 
-// Requête GET à l'API via fetch
+// Requête GET à l'API avec la méthode fetch et l'URL (chemin vers la ressource) en argument
+// Si pas d'argument suppl. précisant le verbe = requête GET par défaut
 fetch("http://localhost:3000/api/products")
   // Création de la promesse avec then et
   // typage des données en JSON s'il y a un resultat
   .then((results) => {
     if (results) {
-      // JSON () pour pouvoir lire et itérer dessus grâce a la boucle map
+      // JSON () pour pouvoir lire et itérer plus tard dessus, grâce a la boucle map
       return results.json();
     }
   })
 
-  // On récupère les données qui sont captées par la promesse .then et envoyé dans le paramètre "values" de
-  // la fct anonyme, elle même en paramètre de la méthode "then"
+  // On récupère les données typées grâce à return et à la 2ieme promesse .then et on les met dans values
+  // qui est en paramètre de la fct anonyme, elle même en paramètre de la méthode "then"
   .then(function (values) {
     // on mappe les données de la promesse et on appelle la fct buildHtml pour chaque produits retournés par l'API fetch et mappé
     values.map(function (value) {
       buildHtml(value);
     });
   })
-  //Si la requête est cassé, on affiche l'erreur captée dans la console et appelle la fct décrite ci-desus.
+  //Si la requête est cassé, on affiche l'erreur captée dans la console et on appelle la fct décrite ci-desus.
   .catch(function (error) {
     console.log(error);
     emptyShop();

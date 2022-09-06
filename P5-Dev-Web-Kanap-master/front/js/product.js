@@ -29,7 +29,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
     console.log(error);
   });
 
-// Création d'une div avec un id "msg" et que l'on place aprés l'input "quantity" qui permettra l'ajout ou non de message
+// Création d'une div avec un id "msg" qui permettra l'ajout ou non de message
 function createMsgElt() {
   // On crée un élément de type div
   let div = document.createElement("div");
@@ -39,7 +39,7 @@ function createMsgElt() {
   quantity.after(div);
 }
 
-// Vide la div ayant l'id "msg" en ecoutant l'évenement "input" si par exemple il y a correction d'erreur
+// Vide la div ayant l'id "msg" s'il y a pas ou plus d'erreur
 function hideMsg() {
   let errorElement = document.getElementById("msg");
   errorElement.innerText = "";
@@ -52,8 +52,8 @@ function displayMsg(text) {
 }
 
 // Incrémente les couleurs une par une dans l'input colors
-function addColors(choice) {
-  color.innerHTML += `<option value="${choice}">${choice}</option>`;
+function addColors(allColors) {
+  color.innerHTML += `<option value="${allColors}">${allColors}</option>`;
 }
 
 // Ajoute les valeurs (name, price, photo et description) d'un canape sur la page 2
@@ -87,10 +87,11 @@ function addButtonEvent(pdts) {
 
 // Contenu de checkIf qui vérifie si les valeurs sont bien renseignées
 function checkIf(val) {
-  // Appel des fct créees plus haut en suposant que tout est ok.
+  // Vide la div #msg si tout est ok
   hideMsg();
 
   // Création de l'objet JS contenant l'id, la qté et la couleur qui sera stocké dans le LS si tout est ok, pour la page cart
+  // Il s'agit en fait d'une partie des caractéristiques des futurs produits du panier
   let optionProduct = {
     idProduct: val._id,
     quantityProduct: document.getElementById("quantity").value,
@@ -104,7 +105,7 @@ function checkIf(val) {
   ) {
     // Si oui, appel de la fct (décrite plus bas) qui permet d'ajouter dans le LS : l'objet "optionProduct"
     addToLocalStorage(optionProduct);
-    // Si non, des alertes apparaîssent si la qté = 0, si la qté est sup. à 100 et s'il n'y a pas de couleur renseigné
+    // Si non, des alertes apparaîssent si la qté = 0, si la qté est sup. à 100 et s'il n'y a pas de couleur renseignée
   } else if (optionProduct.quantityProduct == 0) {
     displayMsg(
       `<span style="background-color:red"> Ajouter une quantité comprise entre 1 et 100, merci :)</span>`
@@ -133,7 +134,7 @@ function addToLocalStorage(optionProduct) {
   // Récupération de la clé produit (avec toutes ses propriétés) dans le LS si elle existe
   // Cela en convertissant le résultat de JSON à objet JS pour l'afficher et travailler dessus plus facilement.
   let productInLocalStorage = JSON.parse(localStorage.getItem("product"));
-  // Si le LS est vide, on y ajoute une clé produit avec l'objet JS qu'on push dans un array
+  // Si le LS est vide, on y ajoute la clé product qui contient un array contenant l'objet "optionProduct" qu'on a push
   if (productInLocalStorage == null) {
     productInLocalStorage = [];
     productInLocalStorage.push(optionProduct),

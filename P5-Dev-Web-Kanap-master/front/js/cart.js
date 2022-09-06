@@ -2,11 +2,11 @@
 
 //-------Déclaration des variables-------
 
-// Récuperation des produits dans le LS
+// Récuperation des produits présents dans le LS.
 let productInLocalStorage = JSON.parse(localStorage.getItem("product"));
-// Création du tableau à poster plus tard
+// Création du tableau à poster plus tard avec la requête POST
 let products = [];
-// Récuperation des balises "section" pour des fonctions utilisées plus bas
+// Récuperation des balises "section" pour des fonctions utilisées plus bas (empty et build)
 let section1 = document.querySelector("#cartAndFormContainer section.cart");
 let section2 = document.getElementById("cart__items");
 // Création du tableau à remplir plus tard
@@ -21,7 +21,7 @@ fetch("http://localhost:3000/api/products")
     }
   })
   .then((values) => {
-    // Appel de la fct init pour les pdts extraits via "fetch"
+    // Appel de la fct init pour les pdts récupérés via "fetch"
     init(values);
   })
   .catch((err) => {
@@ -36,7 +36,7 @@ function emptyMsg() {
   section1.innerHTML = emptyBasket;
 }
 
-// Incrémente dans le DOM, les articles dynamiquement crées avec fullCart.map
+// Incrémente dans le DOM, les articles dynamiquement crées avec fullCart.map grâce au paramètre
 function buildHtml(v) {
   section2.innerHTML += `<article class="cart__item" data-id="${v.idProduct}" data-color="${v.colorProduct}">
                 <div class="cart__item__img">
@@ -69,15 +69,15 @@ function emptyLs() {
 }
 
 // Fonction qui push dans l'array fullCart un objet JS de 6 propriétés (paires clés - valeurs) pour chaque article dans le LS
-// cela permet de créer le panier
+// cela permet de reconstituer un tableau de produits avec plus de caractéristiques (prix,image...) car on avait seulement l'id, la couleur et la qté dans le LS
 function createFullCart(productApi, fullCart) {
   productInLocalStorage.forEach((p) => {
-    // Remplissage du tableau products avec les id a poster plus tard
+    // Remplissage du tableau products avec les id à poster plus tard
     products.push(p.idProduct);
     //Récup. de tous les produits du serveur un par un
     productApi.forEach((product) => {
       // Si un id est commun au 2 objets comparés (LS et api) on remplit fullcart
-      // Ici il sait donc que les valeurs a récup sont celles dont l'id est commun, grâce à la condition "if"
+      // Ici JS sait donc que les valeurs a récup sont celles dont l'id est commun, grâce à la condition "if"
       // et il ne prend pas les valeurs d'un id quelconque !
       if (p.idProduct === product._id) {
         console.log(product.name);
@@ -97,10 +97,10 @@ function createFullCart(productApi, fullCart) {
 // Initialise tout
 function init(productApi) {
   emptyLs();
-  // Si LS non vide on crée le panier
+  // Si LS non vide on crée le panier avec les articles ajoutés dans la page product. Les arguments sont l'array fc en global et ce qu'on récupére de fetch
   if (productInLocalStorage !== null) {
     createFullCart(productApi, fullCart);
-    // Pour chaque produit du panier on fait appel a la fonction build qui va créer les produits dynamiquement dans le html
+    // Pour chaque produit du panier on fait appel a la fonction "build" qui va créer les produits dynamiquement dans le html afin de les afficher à l'ecran
     fullCart.map((p) => {
       buildHtml(p);
     });
@@ -115,7 +115,7 @@ function init(productApi) {
 // Calcule la quantité totale
 function calculTotalQuantity() {
   // Appel de la méthode reduce (reduit les valeurs de l'array en une seule en faisant la somme)
-  // La valeur initiale de 0 est le point de départ et le premier accumulateur
+  // La valeur initiale de 0 (l'argument) quand elle est présente, est le point de départ et le premier accumulateur
   // On ajoute la valeur courante, et leur somme deviendra par la suite le prochain accumulateur et ainsi de suite jusqu'au total
   let sumQty = productInLocalStorage.reduce(function (accu, valCurrent) {
     return accu + parseInt(valCurrent.quantityProduct);
@@ -224,14 +224,14 @@ function createEventChangeQty(fullcart) {
 
 //-------Regex-------
 
-let matchName = /^(?=.{2,40}$)[a-zéèA-Z]+(?:[-'\s][a-zéèA-Z]+)*$/; 
+let matchName = /^(?=.{2,40}$)[a-zéèA-Z]+(?:[-'\s][a-zéèA-Z]+)*$/;
 let matchAddress = /^[0-9A-Zéèa-zÀ-ÖØ-öø-ÿ\-\'\ ]{5,30}$/;
 let matchCity = matchName;
 let matchEmail = /^[_\w-]+@[\w-]+(\.[a-z]{2,3})$/;
 
 //-------Les variables-------
 
-// Objet qui servira à contrôler si tout le formulaire est bien rempli grâce a "true" dans la fct checkInput
+// Objet qui servira à contrôler si tout le formulaire est bien rempli grâce à la valeur de type booléen "true" dans la fct checkInput
 let allInputsCheck = {
   firstName: false,
   lastName: false,
@@ -359,11 +359,11 @@ function createEventOrder() {
       }
     }
     console.log("le formulaire est", formOk);
-    // Si le form reste "true" on envoie l'objet via la requete POST
+    // Si le form reste "true" on envoie l'objet via la requete POST grâce a la fct submit
     if (formOk) {
       submitOrder(order);
     } else {
-      alert("Les champs sont mal remplis");
+      alert("Les champs ne sont pas correctements remplis");
     }
   });
 }
