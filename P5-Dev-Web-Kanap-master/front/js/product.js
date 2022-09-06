@@ -23,6 +23,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
     // On appelle les 2 fcts suivantes :
     buildHtml(values);
     addButtonEvent(values);
+    createMsgElt();
   })
   .catch((error) => {
     console.log(error);
@@ -39,11 +40,9 @@ function createMsgElt() {
 }
 
 // Vide la div ayant l'id "msg" en ecoutant l'évenement "input" si par exemple il y a correction d'erreur
-function hideMsg(elt) {
-  elt.addEventListener("input", function () {
-    let errorElement = document.getElementById("msg");
-    errorElement.innerText = "";
-  });
+function hideMsg() {
+  let errorElement = document.getElementById("msg");
+  errorElement.innerText = "";
 }
 
 // Affiche l'argument dans la div ayant pour id "msg"
@@ -89,9 +88,7 @@ function addButtonEvent(pdts) {
 // Contenu de checkIf qui vérifie si les valeurs sont bien renseignées
 function checkIf(val) {
   // Appel des fct créees plus haut en suposant que tout est ok.
-  createMsgElt();
-  hideMsg(quantity);
-  hideMsg(color);
+  hideMsg();
 
   // Création de l'objet JS contenant l'id, la qté et la couleur qui sera stocké dans le LS si tout est ok, pour la page cart
   let optionProduct = {
@@ -142,7 +139,7 @@ function addToLocalStorage(optionProduct) {
     productInLocalStorage.push(optionProduct),
       localStorage.setItem("product", JSON.stringify(productInLocalStorage));
     // Création et message par ajout de pdts grâce aux fcts ci-dessus
-    createMsgElt();
+
     displayMsg(
       `<span style="background-color:#3DED97">Nouveau produit ajouté avec succès</span>`
     );
@@ -166,7 +163,7 @@ function addToLocalStorage(optionProduct) {
           parseInt(productInLocalStorage[obtainIndex].quantityProduct) +
           parseInt(optionProduct.quantityProduct);
         localStorage.setItem("product", JSON.stringify(productInLocalStorage));
-        createMsgElt();
+
         displayMsg(
           `<span style="background-color:#3DED97">Produit déjà ajouté, la quantité sera ajustée</span>`
         );
@@ -179,7 +176,7 @@ function addToLocalStorage(optionProduct) {
             "product",
             JSON.stringify(productInLocalStorage)
           );
-        createMsgElt();
+
         displayMsg(
           `<span style="background-color:#3DED97">Nouveau produit ajouté avec succès</span>`
         );
