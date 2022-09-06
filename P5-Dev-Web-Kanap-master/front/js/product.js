@@ -1,5 +1,5 @@
-// Récuperation complète des propriétés de l'URL en créant un objet ({}) URL
-// avec pour paramètre : l'url du document en cours et le tout dans une variable (API URL)
+// Récuperation complète des propriétés de l'URL en créant un objet URL ({})
+// avec pour paramètre : l'url du document en cours et le tout dans une variable
 let urlData = new URL(document.location);
 // Récuperation du ou des paramètre(s) de l'URL que l'on a inséré sur la page d'accueil "script"
 // en mettant l'id dans le lien de redirection après la chaine d'interrogation (search = ? = chaine d'interrogation/recherche)
@@ -119,6 +119,14 @@ function checkIf(val) {
   } else if (document.getElementById("colors").value === "") {
     displayMsg(
       `<span style="background-color:red"> Ajouter une couleur, merci :)</span>`
+    );
+  }
+  if (
+    optionProduct.quantityProduct == 0 &&
+    document.getElementById("colors").value === ""
+  ) {
+    displayMsg(
+      `<span style="background-color:red"> Ajouter une couleur et une quantité comprise entre 1 et 100, merci :)</span>`
     );
   }
 }
